@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Visor COLLADA .dae en GitHub Pages</title>
+  <title>Visor COLLADA .dae con inspección de nodos</title>
   <style>
     body { margin: 0; display: flex; font-family: Arial, sans-serif; }
     #sidebar {
@@ -71,7 +71,6 @@
       { part: "PART-001", serial: "SN-003", exp: "2025-07-20" }
     ];
 
-    // Cargar modelo .dae (archivo en la raíz)
     let loader = new THREE.ColladaLoader();
     loader.load(
       '3d-model.dae',
@@ -79,6 +78,15 @@
         model = collada.scene;
         model.scale.set(5, 5, 5);
         scene.add(model);
+
+        // Imprimir nombres de mallas para inspección
+        console.log("Nombres de mallas del modelo:");
+        model.traverse(child => {
+          if (child.isMesh) {
+            console.log(child.name);
+          }
+        });
+
         renderComponentList();
         animate();
       },
@@ -119,6 +127,7 @@
       resetModelColors();
 
       model.traverse((child) => {
+        // Cambiá "child.name.includes(comp.part)" por el nombre que veas en consola después
         if (child.isMesh && child.name.includes(comp.part)) {
           child.material.color.set(0xff0000);
         }
@@ -142,7 +151,6 @@
       }
     };
 
-    // Ajustar tamaño al redimensionar ventana
     window.addEventListener('resize', () => {
       camera.aspect = (window.innerWidth - 300) / window.innerHeight;
       camera.updateProjectionMatrix();
