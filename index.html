@@ -1,123 +1,73 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Visor Interactivo Boeing 757-200</title>
-  <style>
-    body { margin: 0; display: flex; height: 100vh; }
-    #sidebar { width: 280px; background: #f0f0f0; padding: 10px; overflow-y: auto; font-family: sans-serif; }
-    #viewer { flex: 1; }
-    .item-btn { width: 100%; margin: 4px 0; padding: 6px; border: none; cursor: pointer; background: #ddd; }
-    .item-btn:hover { background: #ccc; }
-  </style>
+    <meta charset="UTF-8">
+    <title>Boeing 757-200 Viewer</title>
+    <style>
+        body { margin: 0; display: flex; }
+        #listado { width: 300px; background: #f4f4f4; padding: 10px; overflow-y: auto; }
+        #viewer { flex: 1; height: 100vh; }
+        li { cursor: pointer; margin-bottom: 5px; }
+        li:hover { background: #ddd; }
+    </style>
 </head>
 <body>
-  <div id="sidebar">
-    <h3>Números de Parte</h3>
-    <div id="parts-list"></div>
-    <h3>Números de Serie</h3>
-    <div id="serials-list"></div>
-  </div>
-  <div id="viewer"></div>
+    <div id="listado">
+        <h3>Componentes</h3>
+        <ul id="componentList">
+            <li data-part="PART-001" data-serial="SN-001" data-exp="2025-12-01">Parte 001 - SN001</li>
+            <li data-part="PART-002" data-serial="SN-002" data-exp="2026-05-14">Parte 002 - SN002</li>
+            <li data-part="PART-001" data-serial="SN-003" data-exp="2025-07-20">Parte 001 - SN003</li>
+        </ul>
+    </div>
+    <div id="viewer"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/GLTFLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/controls/OrbitControls.js"></script>
-  <script>
-    let scene, camera, renderer, controls, parts = [];
+    <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/loaders/GLTFLoader.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.js"></script>
 
-    init();
-    loadModelAndData();
-    animate();
+    <script>
+        let scene = new THREE.Scene();
+        let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        let renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth - 300, window.innerHeight);
+        document.getElementById("viewer").appendChild(renderer.domElement);
 
-    function init() {
-      scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x222222);
+        let controls = new THREE.OrbitControls(camera, renderer.domElement);
+        camera.position.set(0, 5, 20);
 
-      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 5000);
-      camera.position.set(0, 5, 50);
+        let light = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
+        scene.add(light);
 
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth - 280, window.innerHeight);
-      document.getElementById('viewer').appendChild(renderer.domElement);
-
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
-
-      const light = new THREE.DirectionalLight(0xffffff, 1);
-      light.position.set(10, 20, 15);
-      scene.add(light);
-
-      const ambient = new THREE.AmbientLight(0xffffff, 0.4);
-      scene.add(ambient);
-    }
-
-    function loadModelAndData() {
-      const loader = new THREE.GLTFLoader();
-
-      loader.load("airliner_boeing_757_transparent.glb", gltf => {
-        const model = gltf.scene;
-        model.scale.set(10, 10, 10); // Ajusta el tamaño si es muy chico o grande
-        scene.add(model);
-
-        model.traverse(child => {
-          if (child.isMesh) {
-            // Simulación de metadatos por partes
-            if (child.name.toLowerCase().includes("wing")) {
-              child.userData.partNumber = "P-WING";
-            } else if (child.name.toLowerCase().includes("engine")) {
-              child.userData.partNumber = "P-ENGINE";
-            } else {
-              child.userData.partNumber = "P-FUSELAGE";
+        let loader = new THREE.GLTFLoader();
+        loader.load(
+            "https://drive.google.com/uc?export=download&id=1KSjAQfMgOUc3GDdl-w5IIQxGuIK_tmYk",
+            function (gltf) {
+                const model = gltf.scene;
+                model.scale.set(5, 5, 5);
+                scene.add(model);
+                animate();
+            },
+            undefined,
+            function (error) {
+                console.error("Error cargando el modelo:", error);
             }
-            child.userData.serialNumber = child.name + "-SN";
-            parts.push(child);
-          }
+        );
+
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        document.querySelectorAll("#componentList li").forEach(item => {
+            item.addEventListener("click", () => {
+                alert(
+                    `Número de parte: ${item.dataset.part}\nNúmero de serie: ${item.dataset.serial}\nVence: ${item.dataset.exp}`
+                );
+                // Aquí podrías agregar código para resaltar en el modelo
+            });
         });
-
-        populateLists();
-      });
-    }
-
-    function populateLists() {
-      const partsDiv = document.getElementById('parts-list');
-      const serialsDiv = document.getElementById('serials-list');
-
-      const uniqueParts = [...new Set(parts.map(p => p.userData.partNumber))];
-      const uniqueSerials = parts.map(p => p.userData.serialNumber);
-
-      uniqueParts.forEach(pn => {
-        const btn = document.createElement('button');
-        btn.textContent = pn;
-        btn.className = 'item-btn';
-        btn.onclick = () => highlightByPart(pn);
-        partsDiv.appendChild(btn);
-      });
-
-      uniqueSerials.forEach(sn => {
-        const btn = document.createElement('button');
-        btn.textContent = sn;
-        btn.className = 'item-btn';
-        btn.onclick = () => highlightBySerial(sn);
-        serialsDiv.appendChild(btn);
-      });
-    }
-
-    function highlightByPart(partNumber) {
-      parts.forEach(p => {
-        p.material.color.set(p.userData.partNumber === partNumber ? 0xff0000 : 0x555555);
-      });
-    }
-
-    function highlightBySerial(serialNumber) {
-      parts.forEach(p => {
-        p.material.color.set(p.userData.serialNumber === serialNumber ? 0xff0000 : 0x555555);
-      });
-    }
-
-    function animate() {
-      requestAnimationFrame(animate);
-      renderer.render(scene, camera);
-    }
-  </script>
+    </script>
 </body>
 </html>
