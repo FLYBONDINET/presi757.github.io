@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Visor Interactivo Boeing 757-200</title>
+  <style>
+    body { margin: 0; display: flex; height: 100vh; }
+    #sidebar { width: 280px; background: #f0f0f0; padding: 10px; overflow-y: auto; font-family: sans-serif; }
+    #viewer { flex: 1; }
+    .item-btn { width: 100%; margin: 4px 0; padding: 6px; border: none; cursor: pointer; background: #ddd; }
+    .item-btn:hover { background: #ccc; }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <h3>Números de Parte</h3>
+    <div id="parts-list"></div>
+    <h3>Números de Serie</h3>
+    <div id="serials-list"></div>
+  </div>
+  <div id="viewer"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/loaders/GLTFLoader.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/js/controls/OrbitControls.js"></script>
+  <script>
+    let scene, camera, renderer, controls, parts = [];
+
+    init();
+    loadModelAndData();
+    animate();
+
+    function init() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x222222);
+
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 5000);
+      camera.position.set(0, 5, 50);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth - 280, window.innerHeight);
+      document.getElementById('viewer').appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(10, 20, 15);
+      scene.add(light);
+
+      const ambient = new THREE.AmbientLight(0xffffff, 0.4);
+      scene.add(ambient);
+    }
+
+    function loadModelAndData() {
+      const loader = new THREE.GLTFLoader();
+
+      loader.load("airliner_boeing_757_transparent.glb", gltf => {
+        const model = gltf.scene;
+        model.scale.set(10, 10, 10); // Ajusta el tamaño si es muy chico o grande
+        scene.add(model);
+
+        model.traverse(child => {
+          if (child.isMesh) {
+            // Simulación de metadatos por partes
+            if (child.name.toLowerCase().includes("wing")) {
+              child.userData.partNumber = "P-WING";
+            } else if (child.name.toLowerCase().includes("engine")) {
+              child.userData.partNumber = "P-ENGINE";
+            } else {
+              child.userData.partNumber = "P-FUSELAGE";
+            }
+            child.userData.serialNumber = child.name + "-SN";
+            parts.push(child);
+          }
+        });
+
+        populateLists();
+      });
+    }
+
+    function populateLists() {
+      const partsDiv = document.getElementById('parts-list');
+      const serialsDiv = document.getElementById('serials-list');
+
+      const uniqueParts = [...new Set(parts.map(p => p.userData.partNumber))];
+      const uniqueSerials = parts.map(p => p.userData.serialNumber);
+
+      uniqueParts.forEach(pn => {
+        const btn = document.createElement('button');
+        btn.textContent = pn;
+        btn.className = 'item-btn';
+        btn.onclick = () => highlightByPart(pn);
+        partsDiv.appendChild(btn);
+      });
+
+      uniqueSerials.forEach(sn => {
+        const btn = document.createElement('button');
+        btn.textContent = sn;
+        btn.className = 'item-btn';
+        btn.onclick = () => highlightBySerial(sn);
+        serialsDiv.appendChild(btn);
+      });
+    }
+
+    function highlightByPart(partNumber) {
+      parts.forEach(p => {
+        p.material.color.set(p.userData.partNumber === partNumber ? 0xff0000 : 0x555555);
+      });
+    }
+
+    function highlightBySerial(serialNumber) {
+      parts.forEach(p => {
+        p.material.color.set(p.userData.serialNumber === serialNumber ? 0xff0000 : 0x555555);
+      });
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      renderer.render(scene, camera);
+    }
+  </script>
+</body>
+</html>
