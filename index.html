@@ -2,50 +2,67 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Boeing 757-200 Viewer</title>
+    <title>Visor Boeing 757-200</title>
     <style>
-        body { margin: 0; display: flex; }
-        #listado { width: 300px; background: #f4f4f4; padding: 10px; overflow-y: auto; }
+        body { margin: 0; display: flex; font-family: Arial; }
+        #sidebar { width: 300px; background: #f4f4f4; padding: 10px; overflow-y: auto; border-right: 1px solid #ccc; }
         #viewer { flex: 1; height: 100vh; }
-        li { cursor: pointer; margin-bottom: 5px; }
+        li { cursor: pointer; margin: 5px 0; padding: 5px; border-radius: 4px; }
         li:hover { background: #ddd; }
+        h3 { margin-top: 0; }
+        input, button { width: 100%; padding: 5px; margin: 3px 0; }
     </style>
 </head>
 <body>
-    <div id="listado">
+    <div id="sidebar">
         <h3>Componentes</h3>
-        <ul id="componentList">
-            <li data-part="PART-001" data-serial="SN-001" data-exp="2025-12-01">Parte 001 - SN001</li>
-            <li data-part="PART-002" data-serial="SN-002" data-exp="2026-05-14">Parte 002 - SN002</li>
-            <li data-part="PART-001" data-serial="SN-003" data-exp="2025-07-20">Parte 001 - SN003</li>
-        </ul>
+        <ul id="componentList"></ul>
+        
+        <h3>Agregar Componente</h3>
+        <input type="text" id="newPart" placeholder="Número de parte">
+        <input type="text" id="newSerial" placeholder="Número de serie">
+        <input type="date" id="newExp">
+        <button id="addComponent">Agregar</button>
     </div>
+
     <div id="viewer"></div>
 
+    <!-- Three.js y extensiones -->
     <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/loaders/GLTFLoader.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.js"></script>
 
     <script>
+        // Variables Three.js
         let scene = new THREE.Scene();
-        let camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        let camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / window.innerHeight, 0.1, 2000);
         let renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth - 300, window.innerHeight);
         document.getElementById("viewer").appendChild(renderer.domElement);
 
         let controls = new THREE.OrbitControls(camera, renderer.domElement);
         camera.position.set(0, 5, 20);
+        controls.update();
 
         let light = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
         scene.add(light);
 
+        let model;
+        const components = [
+            { part: "PART-001", serial: "SN-001", exp: "2025-12-01" },
+            { part: "PART-002", serial: "SN-002", exp: "2026-05-14" },
+            { part: "PART-001", serial: "SN-003", exp: "2025-07-20" }
+        ];
+
+        // Cargar modelo desde Google Drive
         let loader = new THREE.GLTFLoader();
         loader.load(
             "https://drive.google.com/uc?export=download&id=1KSjAQfMgOUc3GDdl-w5IIQxGuIK_tmYk",
             function (gltf) {
-                const model = gltf.scene;
+                model = gltf.scene;
                 model.scale.set(5, 5, 5);
                 scene.add(model);
+                renderComponentList();
                 animate();
             },
             undefined,
@@ -60,14 +77,63 @@
             renderer.render(scene, camera);
         }
 
-        document.querySelectorAll("#componentList li").forEach(item => {
-            item.addEventListener("click", () => {
-                alert(
-                    `Número de parte: ${item.dataset.part}\nNúmero de serie: ${item.dataset.serial}\nVence: ${item.dataset.exp}`
-                );
-                // Aquí podrías agregar código para resaltar en el modelo
+        // Renderizar listado de componentes
+        function renderComponentList() {
+            const list = document.getElementById("componentList");
+            list.innerHTML = "";
+            components.forEach((comp, index) => {
+                const li = document.createElement("li");
+                li.textContent = `${comp.part} - ${comp.serial} (Vence: ${comp.exp})`;
+                li.onclick = () => selectComponent(comp);
+                list.appendChild(li);
             });
-        });
+        }
+
+        // Resaltar componentes
+        function selectComponent(comp) {
+            if (!model) return;
+            resetModelColors();
+            model.traverse(child => {
+                if (child.isMesh) {
+                    // Resalta todos con el mismo número de parte
+                    if (comp.part === "PART-001") {
+                        child.material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+                    }
+                    // Si es el número de serie exacto, color diferente
+                    if (comp.serial === "SN-002") {
+                        child.material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
+                    }
+                }
+            });
+            alert(
+                `Número de parte: ${comp.part}\nNúmero de serie: ${comp.serial}\nVence: ${comp.exp}`
+            );
+        }
+
+        // Resetear color original
+        function resetModelColors() {
+            model.traverse(child => {
+                if (child.isMesh) {
+                    child.material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
+                }
+            });
+        }
+
+        // Agregar componente nuevo
+        document.getElementById("addComponent").onclick = () => {
+            const part = document.getElementById("newPart").value;
+            const serial = document.getElementById("newSerial").value;
+            const exp = document.getElementById("newExp").value;
+            if (part && serial && exp) {
+                components.push({ part, serial, exp });
+                renderComponentList();
+                document.getElementById("newPart").value = "";
+                document.getElementById("newSerial").value = "";
+                document.getElementById("newExp").value = "";
+            } else {
+                alert("Completa todos los campos");
+            }
+        };
     </script>
 </body>
 </html>
