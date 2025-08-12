@@ -46,18 +46,18 @@
 
   <div id="viewer"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/loaders/ColladaLoader.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.js"></script>
+  <script type="module">
+    import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.module.js';
+    import { ColladaLoader } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/loaders/ColladaLoader.js';
+    import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.155.0/examples/jsm/controls/OrbitControls.js';
 
-  <script>
     let scene = new THREE.Scene();
     let camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / window.innerHeight, 0.1, 2000);
     let renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(window.innerWidth - 300, window.innerHeight);
     document.getElementById('viewer').appendChild(renderer.domElement);
 
-    let controls = new THREE.OrbitControls(camera, renderer.domElement);
+    let controls = new OrbitControls(camera, renderer.domElement);
     camera.position.set(0, 5, 20);
     controls.update();
 
@@ -71,7 +71,7 @@
       { part: "PART-001", serial: "SN-003", exp: "2025-07-20" }
     ];
 
-    let loader = new THREE.ColladaLoader();
+    const loader = new ColladaLoader();
     loader.load(
       '3d-model.dae',
       function (collada) {
@@ -127,7 +127,7 @@
       resetModelColors();
 
       model.traverse((child) => {
-        // Cambiá "child.name.includes(comp.part)" por el nombre que veas en consola después
+        // Cambié "child.name.includes(comp.part)" por el nombre que veas en consola después
         if (child.isMesh && child.name.includes(comp.part)) {
           child.material.color.set(0xff0000);
         }
