@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Mantenimiento Boeing 757 - Modelo 3D Interactivo</title>
+  <title>Mantenimiento Boeing 757 con componentes</title>
   <style>
     body, html {
       margin: 0; height: 100%; overflow: hidden; font-family: Arial, sans-serif;
@@ -10,7 +10,7 @@
     }
     #canvas-container {
       flex: 1;
-      background: #ddd;
+      background: black;
       position: relative;
     }
     #info-panel {
@@ -19,8 +19,9 @@
       color: white;
       padding: 15px;
       overflow-y: auto;
+      box-sizing: border-box;
     }
-    h2 {
+    h2, h3 {
       margin-top: 0;
     }
     label {
@@ -33,6 +34,7 @@
       margin-top: 4px;
       border-radius: 4px;
       border: none;
+      box-sizing: border-box;
     }
     button {
       margin-top: 15px;
@@ -55,6 +57,7 @@
       background: #333;
       padding: 10px;
       border-radius: 4px;
+      font-size: 14px;
     }
     #component-list div {
       padding: 6px;
@@ -105,58 +108,50 @@
     </div>
 
     <h3>Lista de Componentes</h3>
-    <div id="component-list">
-      <!-- Lista de componentes -->
-    </div>
+    <div id="component-list"></div>
 
     <h3>Información del Componente Seleccionado</h3>
-    <div id="component-info">
-      <i>No hay componente seleccionado</i>
-    </div>
+    <div id="component-info"><i>No hay componente seleccionado</i></div>
   </div>
 
-  <!-- Librerías three.js -->
+  <!-- Three.js + GLTFLoader + OrbitControls -->
   <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/loaders/GLTFLoader.min.js"></script>
 
   <script>
-    // Setup básico three.js
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x000000);
+
     const camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 1000);
-    camera.position.set(0, 5, 15);
+    camera.position.set(20, 10, 30);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true });
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
 
-    // Controls para rotar
     const controls = new THREE.OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
 
     // Luz
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
     scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
-    dirLight.position.set(10, 20, 10);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(20, 50, 10);
     scene.add(dirLight);
 
-    // Avión simplificado: para demo usaré un cubo grande como fuselaje
-    const planeGeometry = new THREE.BoxGeometry(10, 1.5, 3);
-    const planeMaterial = new THREE.MeshStandardMaterial({ color: 0x156289, metalness: 0.5, roughness: 0.6 });
-    const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
-    planeMesh.name = "Boeing 757";
-    scene.add(planeMesh);
-
-    // Componentes (objetos pequeños) - Se almacenan acá
-    const components = [];
-    const componentGroup = new THREE.Group();
-    scene.add(componentGroup);
-
-    // Raycaster para selección con click
+    // Raycaster para selección
     const raycaster = new THREE.Raycaster();
     const mouse = new THREE.Vector2();
+
+    // Grupo para componentes
+    const componentsGroup = new THREE.Group();
+    scene.add(componentsGroup);
+
+    // Variables para componentes
+    const components = [];
+    let selectedComponent = null;
 
     // UI refs
     const form = document.getElementById('component-form');
@@ -172,44 +167,72 @@
     const filterSerialSelect = document.getElementById('filter-serial');
     const resetFilterBtn = document.getElementById('reset-filter');
 
-    // Función para crear un componente 3D simple (cubo) y añadirlo a la escena
-    function createComponent(data) {
-      const geo = new THREE.BoxGeometry(1, 1, 1);
-      const mat = new THREE.MeshStandardMaterial({ color: Math.random() * 0xffffff });
-      const mesh = new THREE.Mesh(geo, mat);
+    // Cargar modelo Boeing 757 glTF
+    // Modelo glTF Boeing 757 público (simplificado) tomado de https://github.com/KhronosGroup/glTF-Sample-Models/tree/master/2.0/Boeing757
+    // URL raw GitHub para glTF
+    const modelUrl = 'https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/master/2.0/Boeing757/glTF/Boeing757.gltf';
 
-      // Colocar aleatoriamente sobre el avión (en la zona del cubo)
-      mesh.position.set(
-        (Math.random() - 0.5) * 8,  // X dentro del fuselaje
-        0.75,                       // Y sobre fuselaje
-        (Math.random() - 0.5) * 2.5 // Z
-      );
+    let airplane; // Para guardar referencia al modelo cargado
 
+    const loader = new THREE.GLTFLoader();
+    loader.load(modelUrl, function(gltf) {
+      airplane = gltf.scene;
+      airplane.scale.set(10,10,10);
+      scene.add(airplane);
+
+      // Opcional: si el modelo tiene nodos hijos, podríamos detectar para asignar componentes automáticos
+      // Aquí solo agregamos componentes en posiciones alrededor del avión (demo)
+
+      // Agregamos 4 componentes de ejemplo en posiciones relativas al avión
+      addComponentAtPosition({
+        nombre: 'Motor Izquierdo',
+        numParte: 'MTR-123',
+        numSerie: 'SN001',
+        vencimiento: '2027-05-20',
+      }, new THREE.Vector3(-8, 1, -3));
+
+      addComponentAtPosition({
+        nombre: 'Motor Derecho',
+        numParte: 'MTR-123',
+        numSerie: 'SN004',
+        vencimiento: '2027-05-20',
+      }, new THREE.Vector3(-8, 1, 3));
+
+      addComponentAtPosition({
+        nombre: 'Ala Izquierda',
+        numParte: 'ALA-456',
+        numSerie: 'SN002',
+        vencimiento: '1500 hrs',
+      }, new THREE.Vector3(0, 1.5, -6));
+
+      addComponentAtPosition({
+        nombre: 'Ala Derecha',
+        numParte: 'ALA-456',
+        numSerie: 'SN003',
+        vencimiento: '1500 hrs',
+      }, new THREE.Vector3(0, 1.5, 6));
+
+      refreshComponentList();
+      refreshFilters();
+    }, undefined, function(error) {
+      console.error('Error cargando modelo:', error);
+    });
+
+    // Crear componente 3D (pequejo cubo rojo) en posición dada
+    function addComponentAtPosition(data, position) {
+      const geometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
+      const material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.copy(position);
       mesh.userData = {...data};
       mesh.name = data.nombre;
 
-      componentGroup.add(mesh);
+      componentsGroup.add(mesh);
       components.push(mesh);
-
       return mesh;
     }
 
-    // Render loop
-    function animate() {
-      requestAnimationFrame(animate);
-      controls.update();
-      renderer.render(scene, camera);
-    }
-    animate();
-
-    // Ajustar canvas cuando se redimensiona ventana
-    window.addEventListener('resize', () => {
-      camera.aspect = container.clientWidth / container.clientHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
-    });
-
-    // Mostrar info componente seleccionado
+    // Mostrar info seleccionado
     function showComponentInfo(component) {
       if (!component) {
         componentInfoDiv.innerHTML = '<i>No hay componente seleccionado</i>';
@@ -224,27 +247,41 @@
       `;
     }
 
-    // Listar componentes en panel
+    // Seleccionar componente (colorea)
+    function selectComponent(component) {
+      if (selectedComponent) {
+        selectedComponent.material.emissive.set(0x000000);
+      }
+      selectedComponent = component;
+      if (component) {
+        component.material.emissive.set(0x444400);
+        showComponentInfo(component);
+      } else {
+        showComponentInfo(null);
+      }
+    }
+
+    // Actualizar lista UI
     function refreshComponentList() {
       componentListDiv.innerHTML = '';
       components.forEach(c => {
+        if(!c.visible) return;
         const d = c.userData;
         const div = document.createElement('div');
         div.textContent = `${d.nombre} (Parte: ${d.numParte}, Serie: ${d.numSerie})`;
         div.style.color = c.material.color.getStyle();
         div.onclick = () => {
           selectComponent(c);
-          // Centrar cámara en componente
           controls.target.copy(c.position);
-          camera.position.set(c.position.x + 5, c.position.y + 5, c.position.z + 5);
+          camera.position.set(c.position.x + 10, c.position.y + 5, c.position.z + 10);
         };
         componentListDiv.appendChild(div);
       });
     }
 
-    // Actualizar filtros
+    // Actualizar filtros UI
     function refreshFilters() {
-      // Filtrar partes únicas
+      // Partes
       const partes = [...new Set(components.map(c => c.userData.numParte))].sort();
       filterPartSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
       partes.forEach(p => {
@@ -254,7 +291,7 @@
         filterPartSelect.appendChild(opt);
       });
 
-      // Filtrar números de serie únicos
+      // Series
       const series = [...new Set(components.map(c => c.userData.numSerie))].sort();
       filterSerialSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
       series.forEach(s => {
@@ -265,37 +302,41 @@
       });
     }
 
-    // Seleccionar componente 3D (cambia color y muestra info)
-    let selectedComponent = null;
-    function selectComponent(component) {
-      if (selectedComponent) {
-        // Reset color (simple)
-        selectedComponent.material.emissive.set(0x000000);
-      }
-      selectedComponent = component;
-      if (component) {
-        component.material.emissive.set(0x444400); // color de selección
-        showComponentInfo(component);
+    // Filtrar por parte
+    filterPartSelect.addEventListener('change', () => {
+      const part = filterPartSelect.value;
+      if(!part) {
+        components.forEach(c => c.visible = true);
       } else {
-        showComponentInfo(null);
+        components.forEach(c => c.visible = c.userData.numParte === part);
       }
-    }
-
-    // Click en canvas para seleccionar componente
-    renderer.domElement.addEventListener('click', (event) => {
-      // Normalizar coordenadas
-      const rect = renderer.domElement.getBoundingClientRect();
-      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
-      raycaster.setFromCamera(mouse, camera);
-      const intersects = raycaster.intersectObjects(components);
-      if (intersects.length > 0) {
-        selectComponent(intersects[0].object);
-      }
+      filterSerialSelect.value = '';
+      refreshComponentList();
+      selectComponent(null);
     });
 
-    // Cuando envían el formulario, crear componente
+    // Filtrar por serie
+    filterSerialSelect.addEventListener('change', () => {
+      const serie = filterSerialSelect.value;
+      if(!serie) {
+        components.forEach(c => c.visible = true);
+      } else {
+        components.forEach(c => c.visible = c.userData.numSerie === serie);
+      }
+      filterPartSelect.value = '';
+      refreshComponentList();
+      selectComponent(null);
+    });
+
+    resetFilterBtn.addEventListener('click', () => {
+      filterPartSelect.value = '';
+      filterSerialSelect.value = '';
+      components.forEach(c => c.visible = true);
+      refreshComponentList();
+      selectComponent(null);
+    });
+
+    // Agregar componente desde formulario, se posiciona aleatoriamente alrededor del avión
     form.addEventListener('submit', e => {
       e.preventDefault();
       const nombre = compNameInput.value.trim();
@@ -303,91 +344,54 @@
       const numSerie = compSerialInput.value.trim();
       const vencimiento = compExpiryInput.value.trim();
 
-      // Validar simple
       if (!nombre || !numParte || !numSerie || !vencimiento) {
         alert('Completa todos los campos');
         return;
       }
 
-      // Crear y agregar componente 3D
-      const comp = createComponent({nombre, numParte, numSerie, vencimiento});
+      // Posición aleatoria alrededor (cerca del avión)
+      const pos = new THREE.Vector3(
+        (Math.random() - 0.5) * 20,
+        (Math.random() * 5) + 1,
+        (Math.random() - 0.5) * 20
+      );
+
+      const comp = addComponentAtPosition({nombre, numParte, numSerie, vencimiento}, pos);
       refreshComponentList();
       refreshFilters();
 
-      // Limpiar formulario
       form.reset();
     });
 
-    // Filtrar por número de parte
-    filterPartSelect.addEventListener('change', () => {
-      const part = filterPartSelect.value;
-      if (!part) {
-        // Mostrar todos
-        components.forEach(c => c.visible = true);
-        refreshComponentList();
-        return;
+    // Detectar clic en componentes
+    renderer.domElement.addEventListener('click', (event) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+      raycaster.setFromCamera(mouse, camera);
+
+      // Intersectar sólo componentes (cubos rojos)
+      const intersects = raycaster.intersectObjects(components.filter(c => c.visible));
+      if (intersects.length > 0) {
+        selectComponent(intersects[0].object);
       }
-      // Mostrar sólo componentes con ese número de parte
-      components.forEach(c => c.visible = c.userData.numParte === part);
-      // Mostrar lista filtrada
-      componentListDiv.innerHTML = '';
-      components.filter(c => c.visible).forEach(c => {
-        const d = c.userData;
-        const div = document.createElement('div');
-        div.textContent = `${d.nombre} (Parte: ${d.numParte}, Serie: ${d.numSerie})`;
-        div.style.color = c.material.color.getStyle();
-        div.onclick = () => selectComponent(c);
-        componentListDiv.appendChild(div);
-      });
-      // Reset filtro serie para evitar conflicto
-      filterSerialSelect.value = "";
-      selectComponent(null);
     });
 
-    // Filtrar por número de serie
-    filterSerialSelect.addEventListener('change', () => {
-      const serie = filterSerialSelect.value;
-      if (!serie) {
-        components.forEach(c => c.visible = true);
-        refreshComponentList();
-        return;
-      }
-      // Mostrar sólo el componente con ese número de serie
-      components.forEach(c => c.visible = c.userData.numSerie === serie);
-      // Lista con sólo ese componente
-      componentListDiv.innerHTML = '';
-      components.filter(c => c.visible).forEach(c => {
-        const d = c.userData;
-        const div = document.createElement('div');
-        div.textContent = `${d.nombre} (Parte: ${d.numParte}, Serie: ${d.numSerie})`;
-        div.style.color = c.material.color.getStyle();
-        div.onclick = () => selectComponent(c);
-        componentListDiv.appendChild(div);
-      });
-      // Reset filtro parte para evitar conflicto
-      filterPartSelect.value = "";
-      selectComponent(null);
-    });
+    // Animación loop
+    function animate() {
+      requestAnimationFrame(animate);
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
 
-    // Resetear filtros
-    resetFilterBtn.addEventListener('click', () => {
-      filterPartSelect.value = "";
-      filterSerialSelect.value = "";
-      components.forEach(c => c.visible = true);
-      refreshComponentList();
-      selectComponent(null);
+    // Resize handler
+    window.addEventListener('resize', () => {
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
     });
-
-    // Al inicio, agregar algunos componentes de ejemplo (opcional)
-    const ejemplos = [
-      {nombre: "Motor Izquierdo", numParte: "MTR-123", numSerie: "SN001", vencimiento: "2027-05-20"},
-      {nombre: "Ala Derecha", numParte: "ALA-456", numSerie: "SN002", vencimiento: "1500 hrs"},
-      {nombre: "Tren de Aterrizaje", numParte: "TAL-789", numSerie: "SN003", vencimiento: "2028-12-31"},
-      {nombre: "Motor Derecho", numParte: "MTR-123", numSerie: "SN004", vencimiento: "2027-05-20"},
-    ];
-    ejemplos.forEach(e => createComponent(e));
-    refreshComponentList();
-    refreshFilters();
   </script>
 </body>
 </html>
