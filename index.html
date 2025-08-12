@@ -1,12 +1,28 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>Visor Boeing 757-200</title>
+    <meta charset="UTF-8" />
+    <title>Visor Boeing 757-200 con Sketchfab</title>
     <style>
-        body { margin: 0; display: flex; font-family: Arial; }
-        #sidebar { width: 300px; background: #f4f4f4; padding: 10px; overflow-y: auto; border-right: 1px solid #ccc; }
-        #viewer { flex: 1; height: 100vh; }
+        body { margin: 0; font-family: Arial, sans-serif; display: flex; }
+        #sidebar {
+            width: 300px; 
+            background: #f4f4f4; 
+            padding: 10px; 
+            overflow-y: auto; 
+            border-right: 1px solid #ccc;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+        .sketchfab-embed-wrapper {
+            flex: 1; 
+            height: 100vh; 
+        }
+        iframe {
+            width: 100%; 
+            height: 100%; 
+            border: none;
+        }
         li { cursor: pointer; margin: 5px 0; padding: 5px; border-radius: 4px; }
         li:hover { background: #ddd; }
         h3 { margin-top: 0; }
@@ -19,110 +35,46 @@
         <ul id="componentList"></ul>
         
         <h3>Agregar Componente</h3>
-        <input type="text" id="newPart" placeholder="Número de parte">
-        <input type="text" id="newSerial" placeholder="Número de serie">
-        <input type="date" id="newExp">
+        <input type="text" id="newPart" placeholder="Número de parte" />
+        <input type="text" id="newSerial" placeholder="Número de serie" />
+        <input type="date" id="newExp" />
         <button id="addComponent">Agregar</button>
     </div>
 
-    <div id="viewer"></div>
-
-    <!-- Three.js y extensiones -->
-    <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/build/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/loaders/GLTFLoader.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/three@0.155.0/examples/js/controls/OrbitControls.js"></script>
+    <div class="sketchfab-embed-wrapper">
+        <iframe 
+            title="Boeing 757-200"
+            allowfullscreen
+            mozallowfullscreen="true"
+            webkitallowfullscreen="true"
+            allow="autoplay; fullscreen; xr-spatial-tracking"
+            src="https://sketchfab.com/models/b93ea1ca70664392b5d07154d9678614/embed">
+        </iframe>
+    </div>
 
     <script>
-        // Variables Three.js
-        let scene = new THREE.Scene();
-        let camera = new THREE.PerspectiveCamera(75, (window.innerWidth - 300) / window.innerHeight, 0.1, 2000);
-        let renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth - 300, window.innerHeight);
-        document.getElementById("viewer").appendChild(renderer.domElement);
-
-        let controls = new THREE.OrbitControls(camera, renderer.domElement);
-        camera.position.set(0, 5, 20);
-        controls.update();
-
-        let light = new THREE.HemisphereLight(0xffffff, 0x444444, 1);
-        scene.add(light);
-
-        let model;
         const components = [
             { part: "PART-001", serial: "SN-001", exp: "2025-12-01" },
             { part: "PART-002", serial: "SN-002", exp: "2026-05-14" },
             { part: "PART-001", serial: "SN-003", exp: "2025-07-20" }
         ];
 
-        // Cargar modelo desde Google Drive
-        let loader = new THREE.GLTFLoader();
-        loader.load(
-            "https://drive.google.com/uc?export=download&id=1KSjAQfMgOUc3GDdl-w5IIQxGuIK_tmYk",
-            function (gltf) {
-                model = gltf.scene;
-                model.scale.set(5, 5, 5);
-                scene.add(model);
-                renderComponentList();
-                animate();
-            },
-            undefined,
-            function (error) {
-                console.error("Error cargando el modelo:", error);
-            }
-        );
-
-        function animate() {
-            requestAnimationFrame(animate);
-            controls.update();
-            renderer.render(scene, camera);
-        }
-
-        // Renderizar listado de componentes
         function renderComponentList() {
             const list = document.getElementById("componentList");
             list.innerHTML = "";
-            components.forEach((comp, index) => {
+            components.forEach(comp => {
                 const li = document.createElement("li");
                 li.textContent = `${comp.part} - ${comp.serial} (Vence: ${comp.exp})`;
-                li.onclick = () => selectComponent(comp);
+                li.onclick = () => alert(
+                    `Número de parte: ${comp.part}\nNúmero de serie: ${comp.serial}\nVence: ${comp.exp}`
+                );
                 list.appendChild(li);
             });
         }
 
-        // Resaltar componentes
-        function selectComponent(comp) {
-            if (!model) return;
-            resetModelColors();
-            model.traverse(child => {
-                if (child.isMesh) {
-                    // Resalta todos con el mismo número de parte
-                    if (comp.part === "PART-001") {
-                        child.material = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-                    }
-                    // Si es el número de serie exacto, color diferente
-                    if (comp.serial === "SN-002") {
-                        child.material = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-                    }
-                }
-            });
-            alert(
-                `Número de parte: ${comp.part}\nNúmero de serie: ${comp.serial}\nVence: ${comp.exp}`
-            );
-        }
-
-        // Resetear color original
-        function resetModelColors() {
-            model.traverse(child => {
-                if (child.isMesh) {
-                    child.material = new THREE.MeshStandardMaterial({ color: 0xcccccc });
-                }
-            });
-        }
-
-        // Agregar componente nuevo
         document.getElementById("addComponent").onclick = () => {
-            const part = document.getElementById("newPart").value;
-            const serial = document.getElementById("newSerial").value;
+            const part = document.getElementById("newPart").value.trim();
+            const serial = document.getElementById("newSerial").value.trim();
             const exp = document.getElementById("newExp").value;
             if (part && serial && exp) {
                 components.push({ part, serial, exp });
@@ -134,6 +86,8 @@
                 alert("Completa todos los campos");
             }
         };
+
+        renderComponentList();
     </script>
 </body>
 </html>
