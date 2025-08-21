@@ -21,8 +21,8 @@
     .container{max-width:1100px;margin:0 auto;padding:12px 16px}
     h1{font-size:1.25rem;margin:0;display:flex;align-items:center;justify-content:space-between}
     .menu-btn{background:none;border:none;color:#fff;font-size:1.25rem;cursor:pointer}
-    nav{display:flex;flex-direction:column;gap:8px;margin-top:12px;max-height:0;overflow:hidden;transition:max-height 0.25s ease}
-    nav.show{max-height:500px}
+    nav{display:none;flex-direction:column;gap:8px;margin-top:12px}
+    nav.show{display:flex}
     .tab{padding:10px 12px;border:1px solid #374151;border-radius:.65rem;background:#111827;color:#e5e7eb;cursor:pointer;text-align:left}
     .tab.active{outline:2px solid var(--ring);background:#0b1220}
     main{padding:16px}
@@ -38,11 +38,7 @@
     .btn.success{background:var(--accent);border-color:transparent;color:#052e16}
     .camera{width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;border:1px solid #374151;position:relative}
     #video{width:100%;height:100%;object-fit:cover}
-    .flash-btn{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);border:none;color:white;padding:8px;border-radius:50%;cursor:pointer;font-size:1.2rem}
-    table{width:100%;border-collapse:collapse;margin-top:8px}
-    th, td{border:1px solid #374151;padding:6px 8px;text-align:left;font-size:.85rem}
-    th{background:#1f2937}
-    .muted{color:var(--muted);font-size:.8rem;margin-top:6px}
+    .flash-btn{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);border:none;color:white;padding:8px;border-radius:50%;cursor:pointer}
   </style>
 </head>
 <body>
@@ -80,7 +76,7 @@
       <div class="card">
         <h2>Valijas escaneadas</h2>
         <div class="body">
-          <table id="tablaVuelo">
+          <table id="tablaVuelo" style="width:100%">
             <thead>
               <tr><th>#</th><th>Etiqueta</th><th>Fecha/Hora</th><th>Operador</th></tr>
             </thead>
@@ -99,18 +95,9 @@
   const $ = s => document.querySelector(s);
   const $$ = s => document.querySelectorAll(s);
 
-  // Toggle menú
+  // Toggle menu
   $('#menuToggle').addEventListener('click',()=>{
     $('#tabs').classList.toggle('show');
-  });
-
-  // Cerrar menú al hacer clic fuera
-  document.addEventListener('click', (e)=>{
-    const menu = $('#tabs');
-    const btn = $('#menuToggle');
-    if(!menu.contains(e.target) && !btn.contains(e.target)){
-      menu.classList.remove('show');
-    }
   });
 
   // Tabs
@@ -119,7 +106,7 @@
     btn.classList.add('active');
     ['escaneo','vuelos','historial','exportar','ayuda'].forEach(id=>$('#'+id).style.display='none');
     $('#'+btn.dataset.tab).style.display='block';
-    $('#tabs').classList.remove('show'); // cerrar al elegir opción
+    $('#tabs').classList.remove('show');
   }));
 
   // Cámara y linterna
@@ -134,18 +121,14 @@
   startCam();
 
   let flashOn=false;
-  $('#btnFlash').addEventListener('click', async ()=>{
-    if(!track) return alert('No se pudo acceder a la cámara');
-    try{
-      const capabilities = track.getCapabilities();
-      if(capabilities.torch){
-        flashOn=!flashOn;
-        await track.applyConstraints({advanced:[{torch:flashOn}]});
-      } else {
-        alert('Este dispositivo no soporta linterna');
-      }
-    }catch(err){
-      alert('Error al activar linterna: '+err.message);
+  $('#btnFlash').addEventListener('click',()=>{
+    if(!track) return;
+    const capabilities = track.getCapabilities();
+    if(capabilities.torch){
+      flashOn=!flashOn;
+      track.applyConstraints({advanced:[{torch:flashOn}]});
+    }else{
+      alert('Este dispositivo no soporta linterna');
     }
   });
   </script>
