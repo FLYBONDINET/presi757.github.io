@@ -1,171 +1,80 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scanner de Valijas - Web</title>
-  <style>
-    :root{
-      --bg:#0f172a;/* slate-900 */
-      --panel:#111827;/* gray-900 */
-      --card:#1f2937;/* gray-800 */
-      --muted:#9ca3af;/* gray-400 */
-      --accent:#22c55e;/* green-500 */
-      --accent-2:#f59e0b;/* amber-500 */
-      --danger:#ef4444;/* red-500 */
-      --ring:#3b82f6;/* blue-500 */
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans","Apple Color Emoji","Segoe UI Emoji";background:var(--bg);color:#fff}
-    header{position:sticky;top:0;z-index:30;background:linear-gradient(180deg, rgba(17,24,39,0.95), rgba(17,24,39,0.8));backdrop-filter: blur(8px);border-bottom:1px solid #1f2937}
-    .container{max-width:1100px;margin:0 auto;padding:16px}
-    h1{font-size:1.25rem;margin:0;display:flex;align-items:center;gap:.5rem}
-    .badge{font-size:.75rem;padding:.15rem .5rem;border:1px solid #374151;border-radius:.5rem;color:#d1d5db}
-    nav{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
-    .tab{padding:8px 12px;border:1px solid #374151;border-radius:.65rem;background:#111827;color:#e5e7eb;cursor:pointer}
-    .tab.active{outline:2px solid var(--ring);background:#0b1220}
-    main{padding:16px}
-    .grid{display:grid;gap:16px}
-    .grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media (max-width:900px){.grid.cols-2{grid-template-columns:1fr}}
-    .card{background:var(--card);border:1px solid #374151;border-radius:16px;overflow:hidden}
-    .card h2{margin:0;padding:14px 16px;border-bottom:1px solid #374151;font-size:1rem}
-    .card .body{padding:16px}
-    label{display:block;font-size:.9rem;margin:8px 0 4px;color:#e5e7eb}
-    input,select,textarea,button{width:100%;padding:10px 12px;border-radius:12px;border:1px solid #334155;background:#0b1220;color:#e5e7eb}
-    input:focus,select:focus,textarea:focus{outline:2px solid var(--ring);border-color:transparent}
-    button{cursor:pointer}
-    .row{display:flex;gap:8px;flex-wrap:wrap}
-    .row > *{flex:1}
-    .actions{display:flex;gap:8px;flex-wrap:wrap}
-    .btn{padding:10px 12px;border:1px solid #374151;background:#111827;border-radius:12px;color:#e5e7eb}
-    .btn.primary{background:var(--ring);border-color:transparent;color:white}
-    .btn.success{background:var(--accent);border-color:transparent;color:#052e16}
-    .btn.warn{background:var(--accent-2);border-color:transparent;color:#1f1300}
-    .btn.danger{background:var(--danger);border-color:transparent;color:#fff}
-    .pill{display:inline-flex;gap:.5rem;align-items:center;padding:.35rem .6rem;border-radius:999px;border:1px solid #374151;background:#0b1220;color:#cbd5e1;font-size:.8rem}
-    .stat{display:flex;align-items:center;gap:8px}
-    .muted{color:var(--muted)}
-    table{width:100%;border-collapse:collapse}
-    th,td{border-bottom:1px solid #374151;padding:8px;text-align:left;font-size:.92rem}
-    th{color:#cbd5e1;font-weight:600}
-    tr.dup td{background:rgba(245,158,11,0.08)}
-    tr.err td{background:rgba(239,68,68,0.08)}
-    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;background:#0b1220;border:1px solid #334155;border-radius:8px;padding:.15rem .35rem}
-    .camera{width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;border:1px solid #374151}
-    .footer{padding:16px;text-align:center;color:#94a3b8}
-    .chip{display:inline-flex;align-items:center;gap:.35rem;padding:.2rem .55rem;border-radius:999px;border:1px dashed #475569}
-    .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Scanner de Valijas - Solo Cámara</title>
+<style>
+:root{
+  --bg:#0f172a;
+  --card:#1f2937;
+  --muted:#9ca3af;
+  --ring:#3b82f6;
+}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:var(--bg);color:#fff}
+header{position:sticky;top:0;background:#111827;padding:8px;border-bottom:1px solid #1f2937}
+.container{max-width:1100px;margin:0 auto;padding:8px}
+h1{font-size:1.25rem;margin:0}
+.card{background:var(--card);padding:16px;border-radius:12px;margin-bottom:16px}
+.camera{width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;border:1px solid #374151}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.btn{padding:8px 12px;border-radius:12px;border:1px solid #374151;background:#111827;color:#e5e7eb;cursor:pointer}
+.btn.primary{background:var(--ring);border-color:transparent;color:white}
+.muted{color:var(--muted)}
+</style>
 </head>
 <body>
-  <header>
-    <div class="container">
-      <h1>🧳 Scanner de Valijas <span class="badge">Web</span></h1>
-      <nav id="tabs">
-        <button class="tab active" data-tab="escaneo">Escaneo</button>
-        <button class="tab" data-tab="vuelos">Vuelos</button>
-        <button class="tab" data-tab="historial">Historial</button>
-        <button class="tab" data-tab="exportar">Exportar / Herramientas</button>
-        <button class="tab" data-tab="ayuda">Ayuda</button>
-      </nav>
+<header>
+  <div class="container">
+    <h1>🧳 Scanner de Valijas (Cámara)</h1>
+  </div>
+</header>
+
+<main class="container">
+  <div class="card">
+    <h2>Sesión de vuelo</h2>
+    <div>
+      <label for="vueloNumero">N° de vuelo</label>
+      <input id="vueloNumero" placeholder="Ej: AR1234" />
+      <label for="vueloFecha">Fecha</label>
+      <input id="vueloFecha" type="date" />
+      <div class="actions">
+        <button class="btn primary" id="btnNuevaSesion">Iniciar/Actualizar Sesión</button>
+      </div>
+      <p class="muted">La sesión activa define a qué vuelo se asociarán los escaneos.</p>
+      <p>Vuelo activo: <span id="vueloActivo">—</span></p>
     </div>
-  </header>  <main class="container">
-    <!-- Escaneo -->
-    <section id="escaneo" class="grid cols-2">
-      <div class="card">
-        <h2>Sesión de vuelo</h2>
-        <div class="body">
-          <div class="row">
-            <div>
-              <label for="vueloNumero">N° de vuelo</label>
-              <input id="vueloNumero" placeholder="Ej: AR1234" autocomplete="off" />
-            </div>
-            <div>
-              <label for="vueloFecha">Fecha</label>
-              <input id="vueloFecha" type="date" />
-            </div>
-          </div>
-          <div class="row">
-            <div>
-              <label for="origen">Origen</label>
-              <input id="origen" placeholder="Ej: AEP" maxlength="3" />
-            </div>
-            <div>
-              <label for="destino">Destino</label>
-              <input id="destino" placeholder="Ej: NQN" maxlength="3" />
-            </div>
-          </div>
-          <div class="actions" style="margin-top:8px">
-            <button class="btn primary" id="btnNuevaSesion">Iniciar/Actualizar Sesión</button>
-            <button class="btn" id="btnCargarSesion">Cargar Sesión Guardada</button>
-          </div>
-          <p class="muted" style="margin-top:8px">La sesión activa define a qué vuelo se asociarán los escaneos.</p>
-          <hr style="border:none;border-top:1px solid #374151;margin:16px 0">
-          <div class="row">
-            <div class="stat"><span class="pill">Vuelo activo</span> <span id="vueloActivo" class="muted">—</span></div>
-          </div>
-        </div>
-      </div><div class="card">
+  </div>
+
+  <div class="card">
     <h2>Escanear etiqueta de valija</h2>
-    <div class="body">
-      <div class="row">
-        <div>
-          <label for="operador">Operador</label>
-          <input id="operador" placeholder="Nombre del operador" />
-        </div>
-        <div>
-          <label for="modoEntrada">Modo de entrada</label>
-          <select id="modoEntrada">
-            <option value="teclado">Zebra (teclado)</option>
-            <option value="camara">Cámara (si disponible)</option>
-            <option value="manual">Manual</option>
-          </select>
-        </div>
+    <div>
+      <label for="operador">Operador</label>
+      <input id="operador" placeholder="Nombre del operador" />
+      <div class="camera"><video id="video" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video></div>
+      <div class="actions">
+        <button class="btn" id="btnCamara">Iniciar cámara</button>
+        <select id="listaCamaras"></select>
       </div>
-
-      <div id="zonaTeclado">
-        <label for="scanInput">Apunte el escáner aquí y dispare</label>
-        <input id="scanInput" placeholder="Esperando lectura…" autofocus />
-        <p class="muted">Consejo: configure el escáner/DataWedge para enviar <span class="kbd">ENTER</span> al final.</p>
-      </div>
-
-      <div id="zonaCamara" style="display:none">
-        <div class="camera"><video id="video" autoplay playsinline muted style="width:100%;height:100%;object-fit:cover"></video></div>
-        <div class="actions" style="margin-top:8px">
-          <button class="btn" id="btnCamara">Iniciar cámara</button>
-          <select id="listaCamaras"></select>
-        </div>
-        <p class="muted">Usa <code>BarcodeDetector</code> si el navegador lo soporta.</p>
-      </div>
-
-      <div id="zonaManual" style="display:none">
-        <label for="manualInput">Ingresar etiqueta manualmente</label>
-        <input id="manualInput" placeholder="Ej: 4061234567" />
-        <button class="btn success" id="btnAgregarManual" style="margin-top:8px">Agregar</button>
-      </div>
-
-      <div class="row" style="margin-top:12px">
-        <div class="chip"><input id="chkValidar" type="checkbox" checked /> <label for="chkValidar">Validar etiqueta (IATA/Luhn)</label></div>
-        <div class="chip"><input id="chkDuplicados" type="checkbox" checked /> <label for="chkDuplicados">Evitar duplicados</label></div>
-        <div class="chip"><input id="chkAudio" type="checkbox" checked /> <label for="chkAudio">Sonido</label></div>
+      <div class="actions">
+        <label><input type="checkbox" id="chkValidar" checked /> Validar etiqueta (IATA)</label>
+        <label><input type="checkbox" id="chkDuplicados" checked /> Evitar duplicados</label>
+        <label><input type="checkbox" id="chkAudio" checked /> Sonido</label>
       </div>
     </div>
   </div>
 
-  <div class="card" style="grid-column:1/-1">
+  <div class="card">
     <h2>Valijas del vuelo activo</h2>
-    <div class="body">
-      <div class="actions" style="margin-bottom:8px">
-        <span class="pill">Total: <b id="totalVuelo">0</b></span>
-        <span class="pill">Última: <span id="ultimaLectura" class="muted">—</span></span>
-        <button class="btn warn" id="btnDeshacer">Deshacer última</button>
-        <button class="btn danger" id="btnBorrarSeleccionadas">Borrar seleccionadas</button>
+    <div>
+      <div class="actions">
+        <span>Total: <b id="totalVuelo">0</b></span>
+        <span>Última: <span id="ultimaLectura" class="muted">—</span></span>
       </div>
       <div style="overflow:auto;max-height:45vh;border:1px solid #334155;border-radius:12px">
-        <table id="tablaVuelo">
+        <table id="tablaVuelo" style="width:100%;border-collapse:collapse">
           <thead>
             <tr>
-              <th><input type="checkbox" id="chkAll"></th>
               <th>#</th>
               <th>Etiqueta</th>
               <th>Fecha/Hora</th>
@@ -177,406 +86,111 @@
       </div>
     </div>
   </div>
-</section>
+</main>
 
-<!-- Vuelos -->
-<section id="vuelos" style="display:none" class="grid cols-2">
-  <div class="card" style="grid-column:1/-1">
-    <h2>Sesiones guardadas</h2>
-    <div class="body">
-      <div style="overflow:auto;max-height:60vh;border:1px solid #334155;border-radius:12px">
-        <table id="tablaVuelos">
-          <thead>
-            <tr>
-              <th>Vuelo</th>
-              <th>Fecha</th>
-              <th>Ruta</th>
-              <th>Valijas</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</section>
+<audio id="beepOk" preload="auto"><source src="data:audio/wav;base64,UklGRoYAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYBHGZmZmZmZmY=" type="audio/wav"></audio>
+<audio id="beepErr" preload="auto"><source src="data:audio/wav;base64,UklGRoYAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYBHGZmZmZmZmY=" type="audio/wav"></audio>
 
-<!-- Historial -->
-<section id="historial" style="display:none" class="grid cols-2">
-  <div class="card" style="grid-column:1/-1">
-    <h2>Historial completo</h2>
-    <div class="body">
-      <div style="overflow:auto;max-height:60vh;border:1px solid #334155;border-radius:12px">
-        <table id="tablaHistorial">
-          <thead>
-            <tr>
-              <th>Vuelo</th>
-              <th>Fecha/Hora</th>
-              <th>Etiqueta</th>
-              <th>Operador</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</section>
+<script>
+// ---------- Persistencia ----------
+const DB_KEY = 'scannerValijasDB.v1';
+const db = {
+  load(){ try{ return JSON.parse(localStorage.getItem(DB_KEY)) || { vuelos:[], scans:[], active:null }; } catch(e){ return { vuelos:[], scans:[], active:null }; } },
+  save(data){ localStorage.setItem(DB_KEY, JSON.stringify(data)); }
+};
+let state = db.load();
 
-<!-- Exportar -->
-<section id="exportar" style="display:none" class="grid cols-2">
-  <div class="card">
-    <h2>Exportar CSV</h2>
-    <div class="body">
-      <div class="actions">
-        <button class="btn" id="btnExportVuelo">CSV del vuelo activo</button>
-        <button class="btn" id="btnExportTodo">CSV de todo</button>
-      </div>
-      <p class="muted" style="margin-top:8px">El CSV incluye: vuelo, fecha/hora, etiqueta, operador.</p>
-    </div>
-  </div>
-  <div class="card">
-    <h2>Respaldo / Mantenimiento</h2>
-    <div class="body">
-      <div class="actions">
-        <button class="btn" id="btnBackup">Descargar respaldo (JSON)</button>
-        <label class="btn" for="fileRestore">Restaurar respaldo</label>
-        <input id="fileRestore" type="file" accept="application/json" class="sr-only" />
-        <button class="btn danger" id="btnPurgar">Borrar todo (local)</button>
-      </div>
-      <p class="muted" style="margin-top:8px">Los datos se guardan localmente en este dispositivo (LocalStorage). Se puede integrar luego a Google Sheets, Firebase o API propia.</p>
-    </div>
-  </div>
-</section>
+// ---------- Utilidades ----------
+const $ = sel => document.querySelector(sel);
+const fmtDateTime = iso => new Date(iso).toLocaleString();
+const play = ok => { if(!$('#chkAudio').checked) return; (ok? $('#beepOk'): $('#beepErr')).currentTime=0; (ok? $('#beepOk'): $('#beepErr')).play().catch(()=>{}); };
+function newId(){ return Math.random().toString(36).slice(2,10)+Date.now().toString(36); }
+function validaIATATag(code){
+  if(!/^\d{10}$/.test(code)) return false;
+  const digits = code.split('').map(d=>+d); const check = digits.pop();
+  let sum = 0;
+  for(let i=0;i<digits.length;i++){ let v=digits[i]; v=i%2===0?v*3:v; sum+=v; }
+  const calc = (10-(sum%10))%10;
+  return calc===check;
+}
+function setActiveVuelo(vueloId){ state.active=vueloId; db.save(state); renderActive(); renderVueloTable(); }
+function getActiveVuelo(){ return state.vuelos.find(v=>v.id===state.active)||null; }
+function ensureSesionFromForm(){
+  const n=$('#vueloNumero').value.trim().toUpperCase();
+  const f=$('#vueloFecha').value||new Date().toISOString().slice(0,10);
+  if(!n){ alert('Ingrese número de vuelo'); return null; }
+  let v=state.vuelos.find(x=>x.numero===n && x.fecha===f);
+  if(!v){ v={id:newId(), numero:n, fecha:f}; state.vuelos.push(v); }
+  db.save(state); setActiveVuelo(v.id); return v;
+}
 
-<!-- Ayuda -->
-<section id="ayuda" style="display:none">
-  <div class="card">
-    <h2>Guía rápida de uso con Zebra</h2>
-    <div class="body">
-      <ol>
-        <li>En dispositivos Zebra Android, use <b>DataWedge</b> en modo <b>Keystroke</b> y agregue el sufijo <span class="kbd">ENTER</span>.</li>
-        <li>Abra esta página en el dispositivo y mantenga el foco en el campo <i>Esperando lectura…</i>.</li>
-        <li>Opcional: habilite cámara si no tiene escáner físico.</li>
-        <li>Active validación IATA para etiquetas de 10 dígitos con dígito verificador.</li>
-      </ol>
-      <p class="muted">Para integraciones avanzadas (API/Sheets/Firebase, impresoras ZPL, modo offline PWA), podemos ampliar este MVP.</p>
-    </div>
-  </div>
-</section>
+// ---------- Escaneo ----------
+function addScanRaw(code){
+  const v=getActiveVuelo();
+  if(!v){ alert('No hay sesión activa'); play(false); return; }
+  const operador=$('#operador').value.trim()||'';
+  const valida=$('#chkValidar').checked ? validaIATATag(code):true;
+  const duplicados=$('#chkDuplicados').checked;
+  if(!valida){ play(false); markLast(code,'err'); return; }
+  if(duplicados && state.scans.some(s=>s.vueloId===v.id && s.code===code)){ play(false); markLast(code,'dup'); return; }
+  const scan={id:newId(), vueloId:v.id, vuelo:v.numero, ts:new Date().toISOString(), code, operador};
+  state.scans.unshift(scan); db.save(state); renderVueloTable();
+  $('#ultimaLectura').textContent=code;
+  $('#totalVuelo').textContent=state.scans.filter(s=>s.vueloId===v.id).length;
+  play(true);
+}
+function markLast(code,cls){ $('#ultimaLectura').textContent=code; }
 
-<div class="footer">v1.0 • MVP local • Hecho para flujo de escaneo ágil</div>
-
-  </main>  <!-- Sonidos -->  <audio id="beepOk" preload="auto">
-    <source src="data:audio/wav;base64,UklGRoYAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYBHGZmZmZmZmY=" type="audio/wav">
-  </audio>
-  <audio id="beepErr" preload="auto">
-    <source src="data:audio/wav;base64,UklGRoYAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYBHGZmZmZmZmY=" type="audio/wav">
-  </audio>  <script>
-  // ------------------ Persistencia (LocalStorage) ------------------
-  const DB_KEY = 'scannerValijasDB.v1';
-  const db = {
-    load(){
-      try { return JSON.parse(localStorage.getItem(DB_KEY)) || { vuelos: [], scans: [], active:null }; }
-      catch(e){ return { vuelos: [], scans: [], active:null }; }
-    },
-    save(data){ localStorage.setItem(DB_KEY, JSON.stringify(data)); }
-  };
-  let state = db.load();
-
-  // ------------------ Utilidades ------------------
-  const $ = sel => document.querySelector(sel);
-  const $$ = sel => Array.from(document.querySelectorAll(sel));
-  const fmtDateTime = iso => new Date(iso).toLocaleString();
-  const play = ok => { if(!$('#chkAudio').checked) return; (ok? $('#beepOk'): $('#beepErr')).currentTime=0; (ok? $('#beepOk'): $('#beepErr')).play().catch(()=>{}); };
-
-  // IATA Baggage Tag: 10 dígitos, último es check digit (mod 10) usando variante Luhn con base 10 simple.
-  function validaIATATag(code){
-    if(!/^\d{10}$/.test(code)) return false;
-    const digits = code.split('').map(d=>+d);
-    const check = digits.pop();
-    let sum = 0;
-    for(let i=0;i<digits.length;i++){
-      let v = digits[i];
-      // multiplicar alternando 3 y 1 (esquema común en etiquetas IATA)
-      v = (i%2===0) ? v*3 : v*1;
-      sum += v;
-    }
-    const calc = (10 - (sum % 10)) % 10;
-    return calc === check;
-  }
-
-  function newId(){ return Math.random().toString(36).slice(2,10)+Date.now().toString(36); }
-
-  function setActiveVuelo(vueloId){
-    state.active = vueloId; db.save(state); renderActive(); renderVueloTable(); renderVuelos(); renderHistorial(); }
-
-  function getActiveVuelo(){ return state.vuelos.find(v=>v.id===state.active) || null; }
-
-  function ensureSesionFromForm(){
-    const n = $('#vueloNumero').value.trim().toUpperCase();
-    const f = $('#vueloFecha').value || new Date().toISOString().slice(0,10);
-    const o = $('#origen').value.trim().toUpperCase();
-    const d = $('#destino').value.trim().toUpperCase();
-    if(!n) { alert('Ingrese número de vuelo'); return null; }
-    let v = state.vuelos.find(x=>x.numero===n && x.fecha===f);
-    if(!v){ v = { id:newId(), numero:n, fecha:f, origen:o||'', destino:d||'' }; state.vuelos.push(v); }
-    else { v.origen=o||v.origen; v.destino=d||v.destino; }
-    db.save(state);
-    setActiveVuelo(v.id);
-    return v;
-  }
-
-  function addScanRaw(code){
-    const v = getActiveVuelo();
-    if(!v){ alert('No hay sesión de vuelo activa. Inicie/actualice primero.'); play(false); return; }
-    const operador = $('#operador').value.trim() || '';
-    const valida = $('#chkValidar').checked ? validaIATATag(code) : true;
-    const duplicados = $('#chkDuplicados').checked;
-    const mismoVuelo = s => s.vueloId===v.id && s.code===code;
-    if(!valida){ toast(`Etiqueta no válida: ${code}`, 'err'); play(false); markLast(code,'err'); return; }
-    if(duplicados && state.scans.some(mismoVuelo)){
-      toast(`Duplicado en este vuelo: ${code}`, 'warn'); play(false); markLast(code,'dup'); return; }
-    const scan = { id:newId(), vueloId:v.id, vuelo:v.numero, fecha:v.fecha, ruta:`${v.origen||''}-${v.destino||''}`.replace(/^-|-$|--/g,''), ts:new Date().toISOString(), code, operador };
-    state.scans.unshift(scan);
-    db.save(state);
-    renderVueloTable(); renderVuelos(); renderHistorial();
-    $('#ultimaLectura').textContent = code;
-    $('#totalVuelo').textContent = state.scans.filter(s=>s.vueloId===v.id).length;
-    play(true);
-  }
-
-  function markLast(code, cls){
-    const tbody = $('#tablaVuelo tbody');
-    const row = tbody.querySelector('tr');
-    if(row){ row.classList.add(cls==='dup'?'dup':'err'); }
-    $('#ultimaLectura').textContent = code;
-  }
-
-  function toast(msg, type='info'){
-    console.log(`[${type}]`, msg);
-  }
-
-  // ------------------ Render ------------------
-  function renderActive(){
-    const v = getActiveVuelo();
-    $('#vueloActivo').textContent = v ? `${v.numero} • ${v.fecha}${v.origen||v.destino?` • ${v.origen||''}-${v.destino||''}`:''}` : '—';
-  }
-
-  function renderVueloTable(){
-    const v = getActiveVuelo();
-    const tbody = $('#tablaVuelo tbody');
-    tbody.innerHTML = '';
-    if(!v) return;
-    const items = state.scans.filter(s=>s.vueloId===v.id).sort((a,b)=>b.ts.localeCompare(a.ts));
-    items.forEach((s,idx)=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><input type="checkbox" data-id="${s.id}"></td>
-        <td>${items.length - idx}</td>
-        <td>${s.code}</td>
-        <td>${fmtDateTime(s.ts)}</td>
-        <td>${s.operador||''}</td>`;
-      tbody.appendChild(tr);
-    });
-    $('#totalVuelo').textContent = items.length;
-  }
-
-  function renderVuelos(){
-    const tbody = $('#tablaVuelos tbody');
-    tbody.innerHTML = '';
-    const stats = state.vuelos.map(v=>({
-      v,
-      count: state.scans.filter(s=>s.vueloId===v.id).length
-    })).sort((a,b)=> (b.v.fecha+a.v.numero).localeCompare(b.v.fecha+a.v.numero));
-    stats.forEach(({v,count})=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${v.numero}</td>
-        <td>${v.fecha}</td>
-        <td>${(v.origen||'')}-${(v.destino||'')}</td>
-        <td>${count}</td>
-        <td>
-          <button class="btn" data-action="activar" data-id="${v.id}">Activar</button>
-          <button class="btn" data-action="csv" data-id="${v.id}">CSV</button>
-          <button class="btn danger" data-action="del" data-id="${v.id}">Eliminar</button>
-        </td>`;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function renderHistorial(){
-    const tbody = $('#tablaHistorial tbody');
-    tbody.innerHTML = '';
-    state.scans.slice(0,1000).forEach(s=>{
-      const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${s.vuelo}</td><td>${fmtDateTime(s.ts)}</td><td>${s.code}</td><td>${s.operador||''}</td>`;
-      tbody.appendChild(tr);
-    });
-  }
-
-  // ------------------ Eventos de UI ------------------
-  // Tabs
-  $$('#tabs .tab').forEach(btn=>btn.addEventListener('click',()=>{
-    $$('#tabs .tab').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    ['escaneo','vuelos','historial','exportar','ayuda'].forEach(id=>$('#'+id).style.display='none');
-    $('#'+btn.dataset.tab).style.display='grid';
-    if(btn.dataset.tab==='escaneo'){ $('#scanInput').focus(); }
-  }));
-
-  // Sesión
-  $('#btnNuevaSesion').addEventListener('click', ensureSesionFromForm);
-  $('#btnCargarSesion').addEventListener('click', ()=>{
-    const n = prompt('Ingrese número de vuelo (exacto)');
-    if(!n) return;
-    const candidatos = state.vuelos.filter(v=>v.numero.toUpperCase()===n.toUpperCase());
-    if(candidatos.length===0){ alert('No se encontraron sesiones para ese vuelo.'); return; }
-    if(candidatos.length===1){ setActiveVuelo(candidatos[0].id); return; }
-    const idx = prompt('Hay varias fechas. Elija índice:\n' + candidatos.map((v,i)=>`${i+1}) ${v.fecha} ${v.origen||''}-${v.destino||''}`).join('\n'));
-    const i = (+idx||0)-1; if(candidatos[i]) setActiveVuelo(candidatos[i].id);
+// ---------- Render ----------
+function renderActive(){ const v=getActiveVuelo(); $('#vueloActivo').textContent=v?v.numero+' • '+v.fecha:'—'; }
+function renderVueloTable(){
+  const v=getActiveVuelo(); const tbody=$('#tablaVuelo tbody'); tbody.innerHTML=''; if(!v) return;
+  state.scans.filter(s=>s.vueloId===v.id).forEach((s,idx)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${idx+1}</td><td>${s.code}</td><td>${fmtDateTime(s.ts)}</td><td>${s.operador||''}</td>`;
+    tbody.appendChild(tr);
   });
+}
 
-  // Modo de entrada
-  $('#modoEntrada').addEventListener('change',()=>{
-    const m = $('#modoEntrada').value;
-    $('#zonaTeclado').style.display = m==='teclado' ? 'block' : 'none';
-    $('#zonaCamara').style.display = m==='camara' ? 'block' : 'none';
-    $('#zonaManual').style.display = m==='manual' ? 'block' : 'none';
-    if(m==='teclado') $('#scanInput').focus();
-  });
-
-  // Teclado (Zebra en modo keystroke)
-  $('#scanInput').addEventListener('keydown', (e)=>{
-    if(e.key==='Enter'){
-      e.preventDefault();
-      const val = $('#scanInput').value.trim();
-      if(val){ addScanRaw(val); $('#scanInput').value=''; }
-    }
-  });
-
-  // Manual
-  $('#btnAgregarManual').addEventListener('click',()=>{
-    const val = $('#manualInput').value.trim();
-    if(val){ addScanRaw(val); $('#manualInput').value=''; }
-  });
-
-  // Cámara (BarcodeDetector)
-  let stream=null, detector=null, camLoop=false;
-  async function initCamaras(){
+// ---------- Cámara ----------
+let stream=null, detector=null, camLoop=false;
+async function initCamaras(){
+  try{
+    const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
+    const sel=$('#listaCamaras'); sel.innerHTML='';
+    devices.forEach(d=>{ const o=document.createElement('option'); o.value=d.deviceId; o.textContent=d.label||'Cámara'; sel.appendChild(o); });
+  }catch{}
+}
+async function startCam(){
+  try{
+    if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
+    const deviceId=$('#listaCamaras').value||undefined;
+    stream=await navigator.mediaDevices.getUserMedia({video:{deviceId,facingMode:'environment'}});
+    $('#video').srcObject=stream;
+    if('BarcodeDetector' in window){ detector=new BarcodeDetector({formats:['code_128','ean_13','ean_8','upc_a','upc_e','code_39','qr_code']}); camLoop=true; loopDetect(); }
+    else{ alert('BarcodeDetector no soportado'); }
+  }catch(err){ alert('No se pudo iniciar la cámara: '+err.message); }
+}
+async function loopDetect(){
+  while(camLoop){
     try{
-      const devices = (await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
-      const sel = $('#listaCamaras'); sel.innerHTML = '';
-      devices.forEach(d=>{
-        const o=document.createElement('option'); o.value=d.deviceId; o.textContent=d.label||'Cámara'; sel.appendChild(o);
-      });
+      const codes=await detector.detect($('#video'));
+      if(codes && codes.length){ const val=codes[0].rawValue?.trim(); if(val){ addScanRaw(val); await new Promise(r=>setTimeout(r,800)); } }
     }catch{}
+    await new Promise(r=>setTimeout(r,120));
   }
-  async function startCam(){
-    try{
-      if(stream){ stream.getTracks().forEach(t=>t.stop()); stream=null; }
-      const deviceId = $('#listaCamaras').value || undefined;
-      stream = await navigator.mediaDevices.getUserMedia({video:{deviceId,facingMode:'environment'}});
-      $('#video').srcObject = stream;
-      if('BarcodeDetector' in window){
-        detector = new BarcodeDetector({formats:['code_128','ean_13','ean_8','upc_a','upc_e','code_39','qr_code']});
-        camLoop = true; loopDetect();
-      } else {
-        alert('BarcodeDetector no soportado por este navegador.');
-      }
-    }catch(err){ alert('No se pudo iniciar la cámara: '+err.message); }
-  }
-  async function loopDetect(){
-    while(camLoop){
-      try{
-        const codes = await detector.detect($('#video'));
-        if(codes && codes.length){
-          const val = codes[0].rawValue?.trim();
-          if(val){ addScanRaw(val); await new Promise(r=>setTimeout(r,800)); }
-        }
-      }catch{}
-      await new Promise(r=>setTimeout(r,120));
-    }
-  }
-  $('#btnCamara').addEventListener('click',()=>{ startCam(); });
-  initCamaras();
+}
+$('#btnCamara').addEventListener('click',()=>startCam());
+initCamaras();
 
-  // Deshacer / borrar
-  $('#btnDeshacer').addEventListener('click',()=>{
-    const v = getActiveVuelo(); if(!v) return;
-    const idx = state.scans.findIndex(s=>s.vueloId===v.id);
-    if(idx>-1){ state.scans.splice(idx,1); db.save(state); renderVueloTable(); renderVuelos(); renderHistorial(); }
-  });
-  $('#chkAll').addEventListener('change',()=>{
-    $$('#tablaVuelo tbody input[type="checkbox"]').forEach(c=>c.checked=$('#chkAll').checked);
-  });
-  $('#btnBorrarSeleccionadas').addEventListener('click',()=>{
-    const ids = $$('#tablaVuelo tbody input[type="checkbox"]:checked').map(c=>c.dataset.id);
-    if(!ids.length) return;
-    if(!confirm('Borrar seleccionadas?')) return;
-    state.scans = state.scans.filter(s=>!ids.includes(s.id));
-    db.save(state); renderVueloTable(); renderVuelos(); renderHistorial();
-  });
+// ---------- Sesión ----------
+$('#btnNuevaSesion').addEventListener('click',ensureSesionFromForm);
 
-  // Tabla vuelos acciones
-  $('#tablaVuelos').addEventListener('click',(e)=>{
-    const btn = e.target.closest('button'); if(!btn) return;
-    const id = btn.dataset.id; const action = btn.dataset.action;
-    if(action==='activar') setActiveVuelo(id);
-    if(action==='csv') exportCSV(state.scans.filter(s=>s.vueloId===id));
-    if(action==='del'){
-      if(!confirm('Eliminar vuelo y sus lecturas?')) return;
-      state.scans = state.scans.filter(s=>s.vueloId!==id);
-      state.vuelos = state.vuelos.filter(v=>v.id!==id);
-      if(state.active===id) state.active=null;
-      db.save(state); renderActive(); renderVueloTable(); renderVuelos(); renderHistorial();
-    }
-  });
-
-  // Exportar
-  function exportCSV(rows){
-    const header = ['vuelo','fecha','ruta','timestamp','etiqueta','operador'];
-    const lines = rows.map(r=>[r.vuelo,r.fecha,r.ruta||'',r.ts,r.code,r.operador||''].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
-    const csv = [header.join(','), ...lines].join('\n');
-    const blob = new Blob([csv],{type:'text/csv;charset=utf-8;'});
-    const url = URL.createObjectURL(blob);
-    const a = Object.assign(document.createElement('a'),{href:url,download:`escaneos_${new Date().toISOString().replace(/[:T]/g,'-').slice(0,16)}.csv`});
-    a.click(); URL.revokeObjectURL(url);
-  }
-  $('#btnExportVuelo').addEventListener('click',()=>{
-    const v = getActiveVuelo(); if(!v) return alert('No hay vuelo activo.');
-    exportCSV(state.scans.filter(s=>s.vueloId===v.id));
-  });
-  $('#btnExportTodo').addEventListener('click',()=> exportCSV(state.scans));
-
-  // Backup / restore / purgar
-  $('#btnBackup').addEventListener('click',()=>{
-    const blob = new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = Object.assign(document.createElement('a'),{href:url,download:`backup_scanner_${Date.now()}.json`}); a.click(); URL.revokeObjectURL(url);
-  });
-  $('#fileRestore').addEventListener('change',async (e)=>{
-    const file = e.target.files?.[0]; if(!file) return;
-    try{
-      const text = await file.text();
-      const data = JSON.parse(text);
-      if(!data || !Array.isArray(data.vuelos) || !Array.isArray(data.scans)) throw new Error('Formato inválido');
-      state = data; db.save(state); renderActive(); renderVueloTable(); renderVuelos(); renderHistorial();
-      alert('Restaurado OK');
-    }catch(err){ alert('Error restaurando: '+err.message); }
-  });
-  $('#btnPurgar').addEventListener('click',()=>{
-    if(!confirm('¿Seguro que desea borrar TODOS los datos locales?')) return;
-    state = { vuelos:[], scans:[], active:null }; db.save(state); renderActive(); renderVueloTable(); renderVuelos(); renderHistorial();
-  });
-
-  // Init
-  (function init(){
-    // Valores por defecto
-    if(!$('#vueloFecha').value) $('#vueloFecha').value = new Date().toISOString().slice(0,10);
-    renderActive(); renderVueloTable(); renderVuelos(); renderHistorial();
-    $('#scanInput').focus();
-  })();
-  </script></body>
+// ---------- Init ----------
+(function init(){
+  if(!$('#vueloFecha').value) $('#vueloFecha').value=new Date().toISOString().slice(0,10);
+  renderActive(); renderVueloTable();
+})();
+</script>
+</body>
 </html>
