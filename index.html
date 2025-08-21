@@ -7,7 +7,7 @@
   <style>
     :root{
       --bg:#0f172a; --panel:#111827; --card:#1f2937;
-      --muted:#9ca3af; --accent:#22c55e; --danger:#ef4444; --ring:#3b82f6;
+      --muted:#9ca3af; --accent:#22c55e; --danger:#ef4444;
     }
     body{margin:0;font-family:system-ui;background:var(--bg);color:#fff}
     header{position:sticky;top:0;background:var(--panel);padding:10px 16px;
@@ -17,12 +17,16 @@
     .menu-btn{background:none;border:none;cursor:pointer;width:32px;height:32px;
               display:flex;flex-direction:column;justify-content:space-around}
     .menu-btn span{display:block;height:3px;background:#fff;border-radius:2px}
-    nav{position:absolute;top:56px;left:0;right:0;background:var(--panel);display:none;flex-direction:column}
+    nav{position:absolute;top:56px;left:0;right:0;background:var(--panel);
+        display:none;flex-direction:column}
     nav.show{display:flex;}
-    nav button{padding:12px;border:none;background:none;color:#fff;text-align:left;font-size:1rem;cursor:pointer;border-bottom:1px solid #374151}
+    nav button{padding:12px;border:none;background:none;color:#fff;text-align:left;
+               font-size:1rem;cursor:pointer;border-bottom:1px solid #374151}
     main{padding:16px}
-    .card{background:var(--card);border:1px solid #374151;border-radius:12px;padding:16px;margin-bottom:16px}
-    .camera{width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;border:1px solid #374151}
+    .card{background:var(--card);border:1px solid #374151;border-radius:12px;
+          padding:16px;margin-bottom:16px}
+    .camera{width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;
+            overflow:hidden;border:1px solid #374151}
     table{width:100%;border-collapse:collapse}
     th,td{border-bottom:1px solid #374151;padding:6px;text-align:left;font-size:.9rem}
     .btn{padding:8px 12px;border-radius:8px;border:1px solid #374151;cursor:pointer}
@@ -62,7 +66,7 @@
       <div class="card">
         <h2>Resultados</h2>
         <table id="tabla">
-          <thead><tr><th>#</th><th>Código</th><th>Hora</th></tr></thead>
+          <thead><tr><th>#</th><th>Tipo</th><th>Código</th><th>Hora</th></tr></thead>
           <tbody></tbody>
         </table>
       </div>
@@ -70,7 +74,7 @@
 
     <!-- Vuelos -->
     <section id="vuelos" style="display:none">
-      <div class="card"><h2>Vuelos (demo)</h2><p>Aquí se listarán vuelos guardados.</p></div>
+      <div class="card"><h2>Vuelos</h2><p>Listado de vuelos (demo).</p></div>
     </section>
 
     <!-- Historial -->
@@ -90,7 +94,7 @@
   </main>
 
 <script>
-// ===== Menú hamburguesa =====
+// ===== Menú =====
 const menuBtn=document.getElementById("menuBtn");
 const menu=document.getElementById("menu");
 menuBtn.addEventListener("click",()=> menu.classList.toggle("show"));
@@ -98,11 +102,11 @@ menu.querySelectorAll("button").forEach(btn=>{
   btn.addEventListener("click",()=>{
     document.querySelectorAll("main section").forEach(s=>s.style.display="none");
     document.getElementById(btn.dataset.tab).style.display="block";
-    menu.classList.remove("show"); // se cierra solo
+    menu.classList.remove("show"); // cierre automático
   });
 });
 
-// ===== Escáner con cámara + linterna + vibración =====
+// ===== Escáner =====
 let detector=null,stream=null,imageCapture=null,torchOn=false;
 
 async function startCam(){
@@ -110,7 +114,6 @@ async function startCam(){
     stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}});
     document.getElementById("video").srcObject=stream;
 
-    // Linterna si está disponible
     const track=stream.getVideoTracks()[0];
     const capabilities=track.getCapabilities?.() || {};
     if(capabilities.torch){
@@ -121,9 +124,10 @@ async function startCam(){
       torchBtn.className="btn green";
     }
 
-    // Detector de códigos
     if("BarcodeDetector" in window){
-      detector = new BarcodeDetector({formats:["code_128","code_39","ean_13","ean_8","upc_a","upc_e","itf","qr_code"]});
+      detector = new BarcodeDetector({
+        formats:["code_128","code_39","ean_13","ean_8","upc_a","upc_e","itf","qr_code"]
+      });
       detectLoop();
     }else{
       alert("BarcodeDetector no soportado en este navegador.");
@@ -138,27 +142,32 @@ async function detectLoop(){
       const codes=await detector.detect(video);
       if(codes.length>0){
         const code=codes[0].rawValue;
-        logScan(code);
-        // Vibración corta para confirmar lectura
-        if("vibrate" in navigator){ navigator.vibrate(60); }
-        await new Promise(r=>setTimeout(r,900)); // pausa para evitar lecturas repetidas
+        const tipo=codes[0].format;
+        logScan(code,tipo);
+
+        // Vibración
+        if("vibrate" in navigator){ navigator.vibrate(80); }
+
+        // Sonido beep
+        beep();
+
+        await new Promise(r=>setTimeout(r,900)); // evitar duplicados rápidos
       }
     }catch(e){}
     await new Promise(r=>setTimeout(r,140));
   }
 }
 
-function logScan(code){
-  document.getElementById("lastScan").textContent="Última lectura: "+code;
+function logScan(code,tipo){
+  document.getElementById("lastScan").textContent=`Última lectura: ${code} (${tipo})`;
   const tbody=document.querySelector("#tabla tbody");
   const tr=document.createElement("tr");
-  tr.innerHTML=`<td>${tbody.children.length+1}</td><td>${code}</td><td>${new Date().toLocaleTimeString()}</td>`;
+  tr.innerHTML=`<td>${tbody.children.length+1}</td><td>${tipo}</td><td>${code}</td><td>${new Date().toLocaleTimeString()}</td>`;
   tbody.prepend(tr);
 }
 
+// Botones
 document.getElementById("btnCamara").addEventListener("click",startCam);
-
-// Linterna
 document.getElementById("btnTorch").addEventListener("click",async()=>{
   if(!imageCapture || !stream) return;
   const track=stream.getVideoTracks()[0];
@@ -168,6 +177,19 @@ document.getElementById("btnTorch").addEventListener("click",async()=>{
   btn.textContent=torchOn?"Linterna OFF":"Linterna ON";
   btn.className=torchOn?"btn red":"btn green";
 });
+
+// ===== Sonido beep =====
+function beep(){
+  try{
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type="sine"; osc.frequency.setValueAtTime(900,ctx.currentTime);
+    gain.gain.setValueAtTime(0.1,ctx.currentTime);
+    osc.start(); osc.stop(ctx.currentTime+0.15);
+  }catch(e){}
+}
 </script>
 </body>
 </html>
