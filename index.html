@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="es">
+<!DOCTYPE html>
+<html lang="es">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,26 +16,17 @@
       --ring:#3b82f6;
     }
     *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Noto Sans";background:var(--bg);color:#fff}
-    header{position:sticky;top:0;z-index:30;background:linear-gradient(180deg, rgba(17,24,39,0.95), rgba(17,24,39,0.8));backdrop-filter: blur(8px);border-bottom:1px solid #1f2937}
-    .container{max-width:1100px;margin:0 auto;padding:16px}
-    h1{font-size:1.25rem;margin:0;display:flex;align-items:center;gap:.5rem}
-    .badge{font-size:.75rem;padding:.15rem .5rem;border:1px solid #374151;border-radius:.5rem;color:#d1d5db}
-    nav.menu {
-      display: none;
-      flex-direction: column;
-      gap: 4px;
-      padding: 8px 16px;
-      background:#111827;
-      border-bottom:1px solid #1f2937;
-    }
-    nav.menu.show { display: flex; }
-    nav.menu .tab { width:100%; text-align:left; }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial; background:var(--bg); color:#fff}
+    header{position:sticky;top:0;z-index:30;background:var(--panel);border-bottom:1px solid #1f2937}
+    .container{max-width:1100px;margin:0 auto;padding:12px 16px}
+    h1{font-size:1.25rem;margin:0;display:flex;align-items:center;justify-content:space-between}
+    .menu-btn{background:none;border:none;color:#fff;font-size:1.25rem;cursor:pointer}
+    nav{display:flex;flex-direction:column;gap:8px;margin-top:12px;max-height:0;overflow:hidden;transition:max-height 0.25s ease}
+    nav.show{max-height:500px}
+    .tab{padding:10px 12px;border:1px solid #374151;border-radius:.65rem;background:#111827;color:#e5e7eb;cursor:pointer;text-align:left}
+    .tab.active{outline:2px solid var(--ring);background:#0b1220}
     main{padding:16px}
-    .grid{display:grid;gap:16px}
-    .grid.cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}
-    @media (max-width:900px){.grid.cols-2{grid-template-columns:1fr}}
-    .card{background:var(--card);border:1px solid #374151;border-radius:16px;overflow:hidden}
+    .card{background:var(--card);border:1px solid #374151;border-radius:16px;overflow:hidden;margin-bottom:16px}
     .card h2{margin:0;padding:14px 16px;border-bottom:1px solid #374151;font-size:1rem}
     .card .body{padding:16px}
     label{display:block;font-size:.9rem;margin:8px 0 4px;color:#e5e7eb}
@@ -44,127 +36,118 @@
     .btn{padding:10px 12px;border:1px solid #374151;background:#111827;border-radius:12px;color:#e5e7eb}
     .btn.primary{background:var(--ring);border-color:transparent;color:white}
     .btn.success{background:var(--accent);border-color:transparent;color:#052e16}
-    .btn.danger{background:var(--danger);border-color:transparent;color:#fff}
-    table{width:100%;border-collapse:collapse}
-    th,td{border-bottom:1px solid #374151;padding:8px;text-align:left;font-size:.92rem}
-    th{color:#cbd5e1;font-weight:600}
-    tr.dup td{background:rgba(245,158,11,0.08)}
-    tr.err td{background:rgba(239,68,68,0.08)}
-    .camera{width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;border:1px solid #374151}
-    .footer{padding:16px;text-align:center;color:#94a3b8}
+    .camera{width:100%;aspect-ratio:16/9;background:#000;border-radius:12px;overflow:hidden;border:1px solid #374151;position:relative}
+    #video{width:100%;height:100%;object-fit:cover}
+    .flash-btn{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.6);border:none;color:white;padding:8px;border-radius:50%;cursor:pointer;font-size:1.2rem}
+    table{width:100%;border-collapse:collapse;margin-top:8px}
+    th, td{border:1px solid #374151;padding:6px 8px;text-align:left;font-size:.85rem}
+    th{background:#1f2937}
+    .muted{color:var(--muted);font-size:.8rem;margin-top:6px}
   </style>
 </head>
 <body>
   <header>
-    <div class="container" style="display:flex;justify-content:space-between;align-items:center">
-      <h1>🧳 Scanner de Valijas <span class="badge">Web</span></h1>
-      <button id="menuToggle" class="btn" style="width:auto;padding:6px 10px;font-size:1.2rem">☰</button>
+    <div class="container">
+      <h1>
+        🧳 Scanner de Valijas
+        <button class="menu-btn" id="menuToggle">☰</button>
+      </h1>
+      <nav id="tabs">
+        <button class="tab active" data-tab="escaneo">Escaneo</button>
+        <button class="tab" data-tab="vuelos">Vuelos</button>
+        <button class="tab" data-tab="historial">Historial</button>
+        <button class="tab" data-tab="exportar">Exportar / Herramientas</button>
+        <button class="tab" data-tab="ayuda">Ayuda</button>
+      </nav>
     </div>
-    <nav id="tabs" class="menu">
-      <button class="tab active" data-tab="escaneo">Escaneo</button>
-      <button class="tab" data-tab="vuelos">Vuelos</button>
-      <button class="tab" data-tab="historial">Historial</button>
-      <button class="tab" data-tab="exportar">Exportar / Herramientas</button>
-      <button class="tab" data-tab="ayuda">Ayuda</button>
-    </nav>
   </header>
 
   <main class="container">
-    <!-- 🔹 Escaneo -->
-    <section id="escaneo" class="grid cols-2">
+    <!-- Escaneo -->
+    <section id="escaneo">
       <div class="card">
-        <h2>📷 Escanear</h2>
+        <h2>Escanear etiqueta de valija</h2>
         <div class="body">
-          <div class="camera" id="cameraPreview"></div>
-          <input id="scanInput" placeholder="Escanear código..." autofocus />
-          <div style="margin-top:8px"><label><input type="checkbox" id="chkAudio"> Sonido</label></div>
+          <label for="operador">Operador</label>
+          <input id="operador" placeholder="Nombre del operador" />
+          <div class="camera" style="margin-top:12px">
+            <video id="video" autoplay playsinline muted></video>
+            <button class="flash-btn" id="btnFlash">🔦</button>
+          </div>
+          <p class="muted">El sistema usa la cámara del teléfono. Si tu dispositivo lo permite, podrás activar la linterna.</p>
         </div>
       </div>
       <div class="card">
-        <h2>📋 Últimos escaneos</h2>
-        <div class="body"><ul id="scanList"></ul></div>
-      </div>
-    </section>
-
-    <!-- 🔹 Vuelos -->
-    <section id="vuelos" style="display:none" class="grid cols-2">
-      <div class="card"><h2>✈️ Crear vuelo</h2>
+        <h2>Valijas escaneadas</h2>
         <div class="body">
-          <input id="vueloCodigo" placeholder="Código de vuelo">
-          <button class="btn primary" id="btnNuevoVuelo">Crear vuelo</button>
+          <table id="tablaVuelo">
+            <thead>
+              <tr><th>#</th><th>Etiqueta</th><th>Fecha/Hora</th><th>Operador</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
         </div>
       </div>
-      <div class="card"><h2>🛫 Activos</h2><div class="body"><ul id="vueloList"></ul></div></div>
     </section>
-
-    <!-- 🔹 Historial -->
-    <section id="historial" style="display:none" class="grid cols-2">
-      <div class="card"><h2>📑 Escaneos</h2><div class="body"><table><thead><tr><th>Código</th><th>Vuelo</th><th>Hora</th></tr></thead><tbody id="histTable"></tbody></table></div></div>
-    </section>
-
-    <!-- 🔹 Exportar -->
-    <section id="exportar" style="display:none" class="grid cols-2">
-      <div class="card"><h2>📤 Exportar</h2><div class="body"><button class="btn success" id="btnExport">Exportar JSON</button></div></div>
-    </section>
-
-    <!-- 🔹 Ayuda -->
-    <section id="ayuda" style="display:none" class="grid cols-2">
-      <div class="card"><h2>ℹ️ Ayuda</h2><div class="body">App de prueba para escaneo de valijas con cámara del móvil.</div></div>
-    </section>
-
-    <div class="footer">v1.0 • MVP local • Hecho para flujo de escaneo ágil</div>
+    <section id="vuelos" style="display:none">Vuelos</section>
+    <section id="historial" style="display:none">Historial</section>
+    <section id="exportar" style="display:none">Exportar</section>
+    <section id="ayuda" style="display:none">Ayuda</section>
   </main>
 
-  <audio id="beepOk" preload="auto"><source src="data:audio/wav;base64,UklGRoYAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYBHGZmZmZmZmY=" type="audio/wav"></audio>
-  <audio id="beepErr" preload="auto"><source src="data:audio/wav;base64,UklGRoYAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABYBHGZmZmZmZmY=" type="audio/wav"></audio>
-
   <script>
-  // ------------------ Persistencia ------------------
-  const DB_KEY='scannerValijasDB.v1';
-  const db={load(){try{return JSON.parse(localStorage.getItem(DB_KEY))||{vuelos:[],scans:[],active:null}}catch(e){return{vuelos:[],scans:[],active:null}}},save(d){localStorage.setItem(DB_KEY,JSON.stringify(d))}};
-  let state=db.load();
-  const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
-  const fmtDateTime=iso=>new Date(iso).toLocaleString();
-  const play=ok=>{if(!$('#chkAudio')?.checked)return;(ok?$('#beepOk'):$('#beepErr')).currentTime=0;(ok?$('#beepOk'):$('#beepErr')).play().catch(()=>{})};
+  const $ = s => document.querySelector(s);
+  const $$ = s => document.querySelectorAll(s);
 
-  // ------------------ Menú ------------------
-  $('#menuToggle').addEventListener('click',e=>{e.stopPropagation();$('#tabs').classList.toggle('show')});
-  document.addEventListener('click',e=>{
-    const menu=$('#tabs'),toggle=$('#menuToggle');
-    if(menu.classList.contains('show') && !menu.contains(e.target) && !toggle.contains(e.target)){menu.classList.remove('show')}
+  // Toggle menú
+  $('#menuToggle').addEventListener('click',()=>{
+    $('#tabs').classList.toggle('show');
   });
+
+  // Cerrar menú al hacer clic fuera
+  document.addEventListener('click', (e)=>{
+    const menu = $('#tabs');
+    const btn = $('#menuToggle');
+    if(!menu.contains(e.target) && !btn.contains(e.target)){
+      menu.classList.remove('show');
+    }
+  });
+
+  // Tabs
   $$('#tabs .tab').forEach(btn=>btn.addEventListener('click',()=>{
     $$('#tabs .tab').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
     ['escaneo','vuelos','historial','exportar','ayuda'].forEach(id=>$('#'+id).style.display='none');
-    $('#'+btn.dataset.tab).style.display='grid';
-    if(btn.dataset.tab==='escaneo'){$('#scanInput')?.focus()}
-    $('#tabs').classList.remove('show');
+    $('#'+btn.dataset.tab).style.display='block';
+    $('#tabs').classList.remove('show'); // cerrar al elegir opción
   }));
 
-  // ------------------ Funcionalidad ------------------
-  function render(){ // render básico de listas
-    $('#scanList').innerHTML=state.scans.slice(-5).map(s=>`<li>${s.code} (${s.vuelo||'–'})</li>`).join('');
-    $('#vueloList').innerHTML=state.vuelos.map(v=>`<li>${v}</li>`).join('');
-    $('#histTable').innerHTML=state.scans.map(s=>`<tr><td>${s.code}</td><td>${s.vuelo||''}</td><td>${fmtDateTime(s.time)}</td></tr>`).join('');
+  // Cámara y linterna
+  let stream, track;
+  async function startCam(){
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      $('#video').srcObject = stream;
+      track = stream.getVideoTracks()[0];
+    }catch(err){ alert('No se pudo iniciar la cámara: '+err.message); }
   }
+  startCam();
 
-  $('#scanInput').addEventListener('keydown',e=>{
-    if(e.key==='Enter'){const code=e.target.value.trim();if(!code)return;
-      const s={code,time:new Date().toISOString(),vuelo:state.active};state.scans.push(s);
-      db.save(state);render();play(true);e.target.value='';}
+  let flashOn=false;
+  $('#btnFlash').addEventListener('click', async ()=>{
+    if(!track) return alert('No se pudo acceder a la cámara');
+    try{
+      const capabilities = track.getCapabilities();
+      if(capabilities.torch){
+        flashOn=!flashOn;
+        await track.applyConstraints({advanced:[{torch:flashOn}]});
+      } else {
+        alert('Este dispositivo no soporta linterna');
+      }
+    }catch(err){
+      alert('Error al activar linterna: '+err.message);
+    }
   });
-
-  $('#btnNuevoVuelo').onclick=()=>{
-    const v=$('#vueloCodigo').value.trim();if(!v)return;state.vuelos.push(v);state.active=v;db.save(state);render();
-  };
-
-  $('#btnExport').onclick=()=>{
-    const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='valijas.json';a.click();
-  };
-
-  render();
   </script>
 </body>
 </html>
