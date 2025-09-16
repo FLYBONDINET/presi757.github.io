@@ -1,0 +1,15 @@
+{
+  "name": "Esc\u00e1ner de Equipajes \u2022 Flybondi",
+  "short_name": "BaggageScan",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#FFCC00",
+  "theme_color": "#FFCC00",
+  "icons": [
+    {
+      "src": "assets/flybondi-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
